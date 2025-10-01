@@ -75,7 +75,7 @@ export default function CompleteProfile() {
       }));
   
 
-      setMessage("Profile updated successfully ✅");
+      setMessage("Profile updated successfully");
       setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
       console.error(err);
