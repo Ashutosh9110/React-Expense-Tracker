@@ -36,7 +36,7 @@ export default function Login() {
 
       if (user.emailVerified) {
         setIsLoggedIn(true);
-        navigate("/")
+        navigate("/expenses")
       } else {
         navigate("/verify-email")
       }
