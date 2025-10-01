@@ -89,3 +89,33 @@ export async function sendPasswordResetEmail(email) {
     throw new Error(data.error?.message || "Failed to send password reset email");
   }
 }
+
+
+
+export async function addExpenseToDB(userId, expense) {
+  const dbUrl = import.meta.env.VITE_FIREBASE_DATABASE; // from .env
+  const res = await fetch(`${dbUrl}/expenses/${userId}.json`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(expense),
+  });
+
+  if (!res.ok) throw new Error("Failed to add expense");
+  return await res.json();
+}
+
+export async function getExpensesFromDB(userId) {
+  const dbUrl = import.meta.env.VITE_FIREBASE_DATABASE;
+  const res = await fetch(`${dbUrl}/expenses/${userId}.json`);
+
+  if (!res.ok) throw new Error("Failed to fetch expenses");
+  const data = await res.json();
+
+  // Convert Firebase object to array
+  return data
+    ? Object.entries(data).map(([key, value]) => ({
+        firebaseId: key,
+        ...value,
+      }))
+    : [];
+}

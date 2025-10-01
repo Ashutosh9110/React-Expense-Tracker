@@ -1,12 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect, useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
+import { addExpenseToDB, getExpensesFromDB } from "../utils/firebaseUtils";
 
 export default function DailyExpenses() {
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("Food");
   const [expenses, setExpenses] = useState([]);
+  const { user } = useContext(AuthContext);
 
-  const handleSubmit = (e) => {
+  // Fetch expenses when component mounts
+  useEffect(() => {
+    const fetchExpenses = async () => {
+      if (!user?.uid) return;
+      try {
+        const fetched = await getExpensesFromDB(user.uid);
+        setExpenses(fetched.reverse()); // newest first
+      } catch (err) {
+        console.error("Error fetching expenses:", err);
+      }
+    };
+    fetchExpenses();
+  }, [user]);
+
+  //Handle form submit
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!amount || !description) {
       alert("Please fill all fields");
@@ -14,17 +32,25 @@ export default function DailyExpenses() {
     }
 
     const newExpense = {
-      id: Date.now(),
       amount,
       description,
       category,
       date: new Date().toLocaleDateString(),
     };
 
-    setExpenses((prev) => [newExpense, ...prev]);
-    setAmount("");
-    setDescription("");
-    setCategory("Food");
+    try {
+      const savedExpense = await addExpenseToDB(user.uid, newExpense);
+      setExpenses((prev) => [
+        { firebaseId: savedExpense.name, ...newExpense },
+        ...prev,
+      ]);
+      setAmount("");
+      setDescription("");
+      setCategory("Food");
+    } catch (err) {
+      console.error("Error adding expense:", err);
+      alert("Failed to save expense. Try again.");
+    }
   };
 
   return (
@@ -35,9 +61,8 @@ export default function DailyExpenses() {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-
-             {/* Description */}
-             <div>
+          {/* Description */}
+          <div>
             <label className="block text-gray-700 text-sm mb-1">Description</label>
             <input
               type="text"
@@ -47,7 +72,6 @@ export default function DailyExpenses() {
               required
             />
           </div>
-
 
           {/* Amount */}
           <div>
@@ -95,13 +119,15 @@ export default function DailyExpenses() {
           <ul className="space-y-4">
             {expenses.map((exp) => (
               <li
-                key={exp.id}
+                key={exp.firebaseId}
                 className="bg-white rounded-xl p-4 shadow flex justify-between items-center"
               >
                 <div>
                   <p className="text-lg font-semibold text-indigo-700">₹{exp.amount}</p>
                   <p className="text-gray-700">{exp.description}</p>
-                  <p className="text-sm text-gray-500">{exp.category} • {exp.date}</p>
+                  <p className="text-sm text-gray-500">
+                    {exp.category} • {exp.date}
+                  </p>
                 </div>
               </li>
             ))}
