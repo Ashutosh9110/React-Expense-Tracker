@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { auth } from "../firebase/config";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigate, Link } from "react-router-dom";
-import { sendVerificationEmail } from "../utils/firebaseUtils";
+import { sendPasswordResetEmail, sendVerificationEmail } from "../utils/firebaseUtils";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -11,6 +11,13 @@ export default function Login() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showVerify, setShowVerify] = useState(false);
   const [message, setMessage] = useState("");
+
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetMessage, setResetMessage] = useState("");
+  const [resetError, setResetError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -86,6 +93,26 @@ export default function Login() {
     );
   }
 
+
+  const handlePasswordReset = async (e) => {
+    e.preventDefault();
+    setResetMessage("");
+    setResetError("");
+    setIsLoading(true);
+
+    try {
+      await sendPasswordResetEmail(resetEmail);
+      setResetMessage("Password reset email sent! Check your inbox.");
+    } catch (err) {
+      setResetError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
+
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-12">
@@ -135,6 +162,62 @@ export default function Login() {
             Sign up
           </Link>
         </p>
+
+
+
+
+
+
+        <div className="text-center mt-4">
+          <button
+            onClick={() => setShowForgotModal(true)}
+            className="text-indigo-600 font-semibold hover:underline"
+          >
+            Forgot Password?
+          </button>
+        </div>
+
+        {/* Forgot Password Modal */}
+        {showForgotModal && (
+          <div className="fixed inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white rounded-xl p-8 w-full max-w-sm shadow-lg relative">
+              <h2 className="text-xl font-semibold mb-4">Reset Password</h2>
+              <form onSubmit={handlePasswordReset}>
+                <label className="block mb-2 text-lg font-medium text-gray-700">Enter your email</label>
+                <input
+                  type="email"
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400 text-black mb-6"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  required
+                />
+
+                {isLoading ? (
+                  <div className="text-center text-indigo-600 font-semibold">Sending email...</div>
+                ) : (
+                  <button
+                    type="submit"
+                    className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors"
+                  >
+                    Send Reset Email
+                  </button>
+                )}
+
+                {resetMessage && <p className="text-green-600 mt-2">{resetMessage}</p>}
+                {resetError && <p className="text-red-600 mt-2">{resetError}</p>}
+              </form>
+
+              <button
+                onClick={() => setShowForgotModal(false)}
+                className="absolute top-3 right-4 text-gray-600 hover:text-black"
+              >
+                ✖
+              </button>
+            </div>
+          </div>
+        )}
+
+
       </div>
     </div>
   );

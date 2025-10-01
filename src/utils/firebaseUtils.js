@@ -63,3 +63,29 @@ export async function verifyEmailOobCode(oobCode) {
     throw new Error(data.error?.message || "Failed to verify email");
   }
 }
+
+
+
+
+
+export async function sendPasswordResetEmail(email) {
+  const apiKey = import.meta.env.VITE_API_KEY;
+  const res = await fetch(
+    `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        requestType: "PASSWORD_RESET",
+        email,
+      }),
+    }
+  );
+
+  const data = await res.json();
+  if (res.ok) {
+    return data;
+  } else {
+    throw new Error(data.error?.message || "Failed to send password reset email");
+  }
+}
