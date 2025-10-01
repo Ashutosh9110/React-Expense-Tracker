@@ -119,3 +119,32 @@ export async function getExpensesFromDB(userId) {
       }))
     : [];
 }
+
+
+
+
+// DELETE expense
+export async function deleteExpenseFromDB(userId, expenseId) {
+  const dbUrl = import.meta.env.VITE_FIREBASE_DATABASE;
+  const res = await fetch(`${dbUrl}/expenses/${userId}/${expenseId}.json`, {
+    method: "DELETE",
+  });
+
+  if (!res.ok) throw new Error("Failed to delete expense");
+  console.log("Expense successfully deleted");
+  return true;
+}
+
+// UPDATE (PUT) expense
+export async function updateExpenseInDB(userId, expenseId, updatedExpense) {
+  const dbUrl = import.meta.env.VITE_FIREBASE_DATABASE;
+  const res = await fetch(`${dbUrl}/expenses/${userId}/${expenseId}.json`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updatedExpense),
+  });
+
+  if (!res.ok) throw new Error("Failed to update expense");
+  console.log("Expense successfully updated");
+  return await res.json();
+}

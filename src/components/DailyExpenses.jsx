@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { addExpenseToDB, getExpensesFromDB } from "../utils/firebaseUtils";
+import { addExpenseToDB, getExpensesFromDB, deleteExpenseFromDB, updateExpenseInDB } from "../utils/firebaseUtils";
 
 export default function DailyExpenses() {
   const [amount, setAmount] = useState("");
@@ -8,6 +8,8 @@ export default function DailyExpenses() {
   const [category, setCategory] = useState("Food");
   const [expenses, setExpenses] = useState([]);
   const { user } = useContext(AuthContext);
+  const [editId, setEditId] = useState(null);
+
 
   // Fetch expenses when component mounts
   useEffect(() => {
@@ -31,7 +33,7 @@ export default function DailyExpenses() {
       return;
     }
 
-    const newExpense = {
+    const expenseData = {
       amount,
       description,
       category,
@@ -39,11 +41,25 @@ export default function DailyExpenses() {
     };
 
     try {
-      const savedExpense = await addExpenseToDB(user.uid, newExpense);
+      
+      if (editId) {
+        // edit expense
+        await updateExpenseInDB(user.uid, editId, expenseData);
+        setExpenses((prev) =>
+          prev.map((exp) =>
+            exp.firebaseId === editId ? { firebaseId: editId, ...expenseData } : exp
+          )
+        );
+        alert("Expense has been edited");
+
+        setEditId(null);
+      } else {
+      const savedExpense = await addExpenseToDB(user.uid, expenseData);
       setExpenses((prev) => [
-        { firebaseId: savedExpense.name, ...newExpense },
+        { firebaseId: savedExpense.name, ...expenseData },
         ...prev,
       ]);
+    }
       setAmount("");
       setDescription("");
       setCategory("Food");
@@ -53,11 +69,32 @@ export default function DailyExpenses() {
     }
   };
 
+  // delete Expense
+  const handleDelete = async (id) => {
+    try {
+      await deleteExpenseFromDB(user.uid, id);
+      setExpenses((prev) => prev.filter((exp) => exp.firebaseId !== id));
+      alert("Expense has been deleted")
+    } catch (err) {
+      console.error("Error deleting expense:", err);
+    }
+  };
+
+// Start editing
+
+  const startEditing = (exp) => {
+    setEditId(exp.firebaseId);
+    setAmount(exp.amount);
+    setDescription(exp.description);
+    setCategory(exp.category);
+  };
+
+
   return (
     <div className="flex flex-col items-center justify-start min-h-screen bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 py-12 px-4">
       <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-lg">
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-          Add Daily Expense 💸
+          {editId ? "Edit Expense" : "Add Daily Expense"}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -105,8 +142,8 @@ export default function DailyExpenses() {
             type="submit"
             className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition"
           >
-            Add Expense
-          </button>
+            {editId ? "Update Expense" : "Add Expense"}
+            </button>
         </form>
       </div>
 
@@ -129,6 +166,22 @@ export default function DailyExpenses() {
                     {exp.category} • {exp.date}
                   </p>
                 </div>
+
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => startEditing(exp)}
+                    className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(exp.firebaseId)}
+                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                  >
+                    Delete
+                  </button>
+                </div>
+
               </li>
             ))}
           </ul>
