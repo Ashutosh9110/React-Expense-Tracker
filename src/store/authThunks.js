@@ -10,9 +10,16 @@ export const listenToAuthChanges = () => (dispatch) => {
       const token = await firebaseUser.getIdToken();
       const userData = await getCurrentUserData(token);
 
+      const safeUser = {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        displayName: firebaseUser.displayName,
+        ...userData,
+      };
+
       dispatch(
         login({
-          user: { ...firebaseUser, ...userData },
+          user: safeUser,
           token,
           userId: firebaseUser.uid,
         })

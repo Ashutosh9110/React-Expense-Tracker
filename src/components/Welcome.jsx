@@ -2,9 +2,13 @@
 import { useContext } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+
+
 
 export default function Welcome() {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white px-6">
@@ -12,6 +16,13 @@ export default function Welcome() {
       <p className="text-lg mb-8 text-center">
         Track your income and expenses effortlessly.
       </p>
+
+      <button
+        onClick={() => navigate("/expenses")}
+        className="px-6 py-3 bg-yellow-500 hover:bg-yellow-600 rounded-lg text-lg font-semibold transition"
+      >
+        Go to Your Expenses →
+      </button>
 
       {user ? (
         <div className="text-center">

@@ -45,11 +45,19 @@ export default function App() {
     dispatch(listenToAuthChanges());
   }, [dispatch]);
 
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkMode]);
+
   return (
     <Router>
       <AuthProvider>
-        <div className={darkMode ? "dark bg-gray-900 text-white min-h-screen" : "bg-white text-black min-h-screen"}>
-          <AppContent />
+      <div className="min-h-screen bg-white text-black dark:bg-gray-900 dark:text-white transition-colors">
+      <AppContent />
         </div>
       </AuthProvider>
     </Router>

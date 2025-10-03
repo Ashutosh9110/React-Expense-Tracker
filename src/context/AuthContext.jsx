@@ -21,33 +21,29 @@ export function AuthProvider({ children }) {
         try {
           const idToken = await firebaseUser.getIdToken();
           const userData = await getCurrentUserData(idToken);
-
-          setUser({ ...firebaseUser, ...userData });
-
+  
+          // ✅ Safe user object (plain JSON only)
+          const safeUser = {
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            displayName: firebaseUser.displayName,
+            photoURL: firebaseUser.photoURL,
+            ...userData, // if you have extra profile data from Firestore
+          };
+  
+          setUser(safeUser);
+  
           dispatch(
             login({
-              user: firebaseUser,
+              user: safeUser, // ✅ SAFE: now it's just JSON
               token: idToken,
               userId: firebaseUser.uid,
             })
           );
-
+  
           localStorage.setItem("token", idToken);
         } catch (err) {
           console.error("Failed to fetch profile data:", err);
-
-          const fallbackToken = await firebaseUser.getIdToken();
-          setUser(firebaseUser);
-
-          dispatch(
-            login({
-              user: firebaseUser,
-              token: fallbackToken,
-              userId: firebaseUser.uid,
-            })
-          );
-
-          localStorage.setItem("token", fallbackToken);
         }
       } else {
         setUser(null);
@@ -56,9 +52,10 @@ export function AuthProvider({ children }) {
       }
       setLoading(false);
     });
-
+  
     return () => unsubscribe();
   }, [dispatch]);
+  
 
   // logout handler
   const logout = async () => {

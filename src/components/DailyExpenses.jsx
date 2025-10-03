@@ -6,6 +6,7 @@ import { setExpenses, addExpense, updateExpense, deleteExpense } from "../store/
 import { activatePremium } from "../store/slices/expensesSlice";
 
 
+
 export default function DailyExpenses() {
 
   const dispatch = useDispatch();
@@ -18,6 +19,7 @@ export default function DailyExpenses() {
   const [category, setCategory] = useState("Food");
   // const [expenses, setExpenses] = useState([]);
   const [editId, setEditId] = useState(null);
+  const cartVisible = useSelector((state) => state.cart.visible);
 
 
   // Fetch expenses when component mounts
@@ -187,7 +189,7 @@ export default function DailyExpenses() {
               onClick={handleActivatePremium}
               className="px-6 py-2 bg-yellow-500 text-white font-bold rounded-lg shadow hover:bg-yellow-600"
             >
-              🎉 Activate Premium
+              Activate Premium
             </button>
           </div>
         )}
@@ -198,10 +200,18 @@ export default function DailyExpenses() {
               onClick={downloadCSV}
               className="px-6 py-2 bg-green-600 text-white font-bold rounded-lg shadow hover:bg-green-700"
             >
-              ⬇ Download CSV
+              Download CSV
             </button>
           </div>
         )}
+
+          {cartVisible && (
+            <div className="fixed top-20 right-5 bg-white dark:bg-gray-800 text-black dark:text-white p-6 rounded-xl shadow-lg w-80">
+              <h3 className="text-xl font-bold mb-2">🛒 Your Cart</h3>
+              <p>Cart details will go here...</p>
+            </div>
+          )}
+          
       </div>
     </div>
   );
