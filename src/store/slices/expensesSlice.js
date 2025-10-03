@@ -38,8 +38,11 @@ const expensesSlice = createSlice({
       state.list = state.list.filter((e) => e.firebaseId !== id);
       state.premiumActive = state.totalAmount > 10000;
     },
+    activatePremium: (state) => {
+      state.premiumActive = true;
+    }
   },
 });
 
-export const { setExpenses, addExpense, updateExpense, deleteExpense } = expensesSlice.actions;
+export const { setExpenses, addExpense, updateExpense, deleteExpense, activatePremium } = expensesSlice.actions;
 export default expensesSlice.reducer;

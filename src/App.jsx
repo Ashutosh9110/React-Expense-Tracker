@@ -38,6 +38,8 @@ function AppContent() {
 
 export default function App() {
   const dispatch = useDispatch();
+  const darkMode = useSelector((state) => state.theme.darkMode);
+
 
   useEffect(() => {
     dispatch(listenToAuthChanges());
@@ -46,7 +48,9 @@ export default function App() {
   return (
     <Router>
       <AuthProvider>
-        <AppContent />
+        <div className={darkMode ? "dark bg-gray-900 text-white min-h-screen" : "bg-white text-black min-h-screen"}>
+          <AppContent />
+        </div>
       </AuthProvider>
     </Router>
   );

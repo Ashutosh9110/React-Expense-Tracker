@@ -3,12 +3,14 @@ import { AuthContext } from "../context/AuthContext";
 import { addExpenseToDB, getExpensesFromDB, deleteExpenseFromDB, updateExpenseInDB } from "../utils/firebaseUtils";
 import { useDispatch, useSelector } from "react-redux";
 import { setExpenses, addExpense, updateExpense, deleteExpense } from "../store/slices/expensesSlice";
+import { activatePremium } from "../store/slices/expensesSlice";
 
 
 export default function DailyExpenses() {
 
   const dispatch = useDispatch();
   const { list: expenses, premiumActive } = useSelector((state) => state.expenses);
+  const totalExpenses = expenses.reduce((acc, exp) => acc + Number(exp.amount || 0), 0);
   const { userId, token } = useSelector((state) => state.auth);
   
   const [amount, setAmount] = useState("");
@@ -63,6 +65,23 @@ export default function DailyExpenses() {
     setDescription(exp.description);
     setCategory(exp.category);
   };
+
+  const handleActivatePremium = () => {
+    dispatch(activatePremium());
+  };
+
+  const downloadCSV = () => {
+    const headers = ["Amount", "Description", "Category", "Date"];
+    const rows = expenses.map(exp => [exp.amount, exp.description, exp.category, exp.date]);
+  
+    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "expenses.csv";
+    link.click();
+  };
+
 
 
   return (
@@ -161,13 +180,28 @@ export default function DailyExpenses() {
             ))}
           </ul>
         )}
+
+        {!premiumActive && totalExpenses >= 10000 && (
+          <div className="mt-6 text-center">
+            <button
+              onClick={handleActivatePremium}
+              className="px-6 py-2 bg-yellow-500 text-white font-bold rounded-lg shadow hover:bg-yellow-600"
+            >
+              🎉 Activate Premium
+            </button>
+          </div>
+        )}
+
         {premiumActive && (
-  <div className="mt-6 text-center">
-    <button className="px-6 py-2 bg-yellow-500 text-white font-bold rounded-lg shadow hover:bg-yellow-600">
-      🎉 Activate Premium
-    </button>
-  </div>
-)}
+          <div className="mt-6 text-center space-x-4">
+            <button
+              onClick={downloadCSV}
+              className="px-6 py-2 bg-green-600 text-white font-bold rounded-lg shadow hover:bg-green-700"
+            >
+              ⬇ Download CSV
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
