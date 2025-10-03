@@ -1,5 +1,6 @@
 // src/AppContent.jsx
 import { Routes, Route } from "react-router-dom";
+import React from "react";
 import { useSelector } from "react-redux";
 import Notification from "./components/UI/Notification";
 import Header from "./components/Header";
