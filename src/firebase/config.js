@@ -1,12 +1,14 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { getEnv } from "../utils/env";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_API_KEY,
-  authDomain: "expense-tracker-react-9037d.firebaseapp.com",
-  projectId: "expense-tracker-react-9037d",
-  storageBucket: "expense-tracker-react-9037d.appspot.com",
-  messagingSenderId: "794207291919",
+  apiKey: getEnv("VITE_API_KEY"),
+  authDomain: getEnv("VITE_AUTH_DOMAIN"),
+  projectId: getEnv("VITE_PROJECT_ID"),
+  storageBucket: getEnv("VITE_STORAGE_BUCKET"),
+  messagingSenderId: getEnv("VITE_MESSAGING_SENDER_ID"),
+  appId: getEnv("VITE_APP_ID"),
 };
 
 const app = initializeApp(firebaseConfig);
