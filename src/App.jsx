@@ -11,6 +11,7 @@ import DailyExpenses from './components/DailyExpenses';
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { listenToAuthChanges } from "./store/authThunks";
+import Products from "./components/Products";
 
 function ProtectedRoute({ children }) {
   const { isLoggedIn } = useSelector((state) => state.auth);
@@ -28,9 +29,8 @@ function AppContent() {
         <Route path="/login" element={<Login />} />
         <Route path="/complete-profile" element={<CompleteProfile />} />
         <Route path="/verify-email" element={<VerifyEmail />} /> 
-        <Route path="/expenses" element={
-            <ProtectedRoute><DailyExpenses /></ProtectedRoute>
-        } />
+        <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
+        <Route path="/expenses" element={<ProtectedRoute><DailyExpenses /></ProtectedRoute>} />
       </Routes>
     </div>
   );

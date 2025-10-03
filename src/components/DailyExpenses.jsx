@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { addExpenseToDB, getExpensesFromDB, deleteExpenseFromDB, updateExpenseInDB } from "../utils/firebaseUtils";
 import { useDispatch, useSelector } from "react-redux";
@@ -20,6 +20,7 @@ export default function DailyExpenses() {
   // const [expenses, setExpenses] = useState([]);
   const [editId, setEditId] = useState(null);
   const cartVisible = useSelector((state) => state.cart.visible);
+  const cartItems = useSelector((state) => state.cart.items);
 
 
   // Fetch expenses when component mounts
@@ -127,8 +128,8 @@ export default function DailyExpenses() {
               onChange={(e) => setCategory(e.target.value)}
             >
               <option value="Food">Food</option>
-              <option value="Petrol">Petrol</option>
-              <option value="Salary">Salary</option>
+              <option value="Party">Party</option>
+              <option value="Travelling">Travelling</option>
               <option value="Shopping">Shopping</option>
               <option value="Other">Other</option>
             </select>
@@ -205,12 +206,23 @@ export default function DailyExpenses() {
           </div>
         )}
 
-          {cartVisible && (
-            <div className="fixed top-20 right-5 bg-white dark:bg-gray-800 text-black dark:text-white p-6 rounded-xl shadow-lg w-80">
-              <h3 className="text-xl font-bold mb-2">🛒 Your Cart</h3>
-              <p>Cart details will go here...</p>
-            </div>
-          )}
+        {cartVisible && (
+          <div className="fixed top-20 right-5 bg-white dark:bg-gray-800 text-black dark:text-white p-6 rounded-xl shadow-lg w-80">
+            <h3 className="text-xl font-bold mb-4">🛒 Your Cart</h3>
+            {cartItems.length === 0 ? (
+              <p>No items in your cart.</p>
+            ) : (
+              <ul className="space-y-2">
+                {cartItems.map((item) => (
+                  <li key={item.id} className="flex justify-between items-center">
+                    <span>{item.title} x {item.quantity}</span>
+                    <span>${(item.price * item.quantity).toFixed(2)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
           
       </div>
     </div>

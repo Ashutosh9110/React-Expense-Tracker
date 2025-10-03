@@ -12,6 +12,8 @@ const Header = () => {
   const premiumActive = useSelector((state) => state.expenses.premiumActive);
   const darkMode = useSelector((state) => state.theme.darkMode);
   const cartVisible = useSelector((state) => state.cart.visible);
+  const cartItems = useSelector((state) => state.cart.items);
+  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const { logout } = useContext(AuthContext);
   const dispatch = useDispatch();
   const navigate = useNavigate(); 
@@ -34,11 +36,16 @@ const Header = () => {
             {/* My Cart Button */}
         {isLoggedIn && (
           <button
-            onClick={() => dispatch(toggleCart())}
-            className="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600"
-          >
-            🛒 {cartVisible ? "Hide Cart" : "My Cart"}
-          </button>
+          onClick={() => dispatch(toggleCart())}
+          className="relative px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600"
+        >
+          🛒 {cartVisible ? "Hide Cart" : "My Cart"}
+          {totalItems > 0 && (
+            <span className="absolute -top-2 -right-2 bg-yellow-400 text-black rounded-full px-2 text-sm">
+              {totalItems}
+            </span>
+          )}
+        </button>
         )}
             {/* Theme Toggle */}
         {premiumActive && (

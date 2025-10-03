@@ -24,6 +24,13 @@ export default function Welcome() {
         Go to Your Expenses →
       </button>
 
+      <button
+        onClick={() => navigate("/products")}
+        className="px-6 py-3 bg-green-500 hover:bg-green-600 rounded-lg text-lg font-semibold transition mt-4"
+      >
+        🛍 Go to Products Section
+      </button>
+
       {user ? (
         <div className="text-center">
           <p className="mb-4 text-lg">
