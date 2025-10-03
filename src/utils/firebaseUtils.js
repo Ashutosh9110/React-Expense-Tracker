@@ -104,14 +104,13 @@ export async function addExpenseToDB(userId, expense) {
   return await res.json();
 }
 
-export async function getExpensesFromDB(userId) {
+export async function getExpensesFromDB(userId, token) {
   const dbUrl = import.meta.env.VITE_FIREBASE_DATABASE;
-  const res = await fetch(`${dbUrl}/expenses/${userId}.json`);
+  const res = await fetch(`${dbUrl}/expenses/${userId}.json?auth=${token}`);
 
   if (!res.ok) throw new Error("Failed to fetch expenses");
   const data = await res.json();
 
-  // Convert Firebase object to array
   return data
     ? Object.entries(data).map(([key, value]) => ({
         firebaseId: key,
@@ -119,6 +118,7 @@ export async function getExpensesFromDB(userId) {
       }))
     : [];
 }
+
 
 
 

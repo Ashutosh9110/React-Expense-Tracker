@@ -1,85 +1,60 @@
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { addExpenseToDB, getExpensesFromDB, deleteExpenseFromDB, updateExpenseInDB } from "../utils/firebaseUtils";
+import { useDispatch, useSelector } from "react-redux";
+import { setExpenses, addExpense, updateExpense, deleteExpense } from "../store/slices/expensesSlice";
+
 
 export default function DailyExpenses() {
+
+  const dispatch = useDispatch();
+  const { list: expenses, premiumActive } = useSelector((state) => state.expenses);
+  const { userId, token } = useSelector((state) => state.auth);
+  
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("Food");
-  const [expenses, setExpenses] = useState([]);
-  const { user } = useContext(AuthContext);
+  // const [expenses, setExpenses] = useState([]);
   const [editId, setEditId] = useState(null);
 
 
   // Fetch expenses when component mounts
   useEffect(() => {
     const fetchExpenses = async () => {
-      if (!user?.uid) return;
-      try {
-        const fetched = await getExpensesFromDB(user.uid);
-        setExpenses(fetched.reverse()); // newest first
-      } catch (err) {
-        console.error("Error fetching expenses:", err);
-      }
+      if (!userId || !token) return;
+      const fetched = await getExpensesFromDB(userId, token);
+      dispatch(setExpenses(fetched.reverse()));
     };
     fetchExpenses();
-  }, [user]);
+  }, [userId, token, dispatch]);
 
   //Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!amount || !description) {
-      alert("Please fill all fields");
-      return;
+    const expenseData = { amount, description, category, date: new Date().toLocaleDateString() };
+  
+    if (editId) {
+      await updateExpenseInDB(userId, editId, expenseData, token);
+      dispatch(updateExpense({ id: editId, updatedExpense: expenseData }));
+      alert("Expense has been edited");
+      setEditId(null);
+    } else {
+      const saved = await addExpenseToDB(userId, expenseData, token);
+      dispatch(addExpense({ firebaseId: saved.name, ...expenseData }));
     }
-
-    const expenseData = {
-      amount,
-      description,
-      category,
-      date: new Date().toLocaleDateString(),
-    };
-
-    try {
-      
-      if (editId) {
-        // edit expense
-        await updateExpenseInDB(user.uid, editId, expenseData);
-        setExpenses((prev) =>
-          prev.map((exp) =>
-            exp.firebaseId === editId ? { firebaseId: editId, ...expenseData } : exp
-          )
-        );
-        alert("Expense has been edited");
-
-        setEditId(null);
-      } else {
-      const savedExpense = await addExpenseToDB(user.uid, expenseData);
-      setExpenses((prev) => [
-        { firebaseId: savedExpense.name, ...expenseData },
-        ...prev,
-      ]);
-    }
-      setAmount("");
-      setDescription("");
-      setCategory("Food");
-    } catch (err) {
-      console.error("Error adding expense:", err);
-      alert("Failed to save expense. Try again.");
-    }
+  
+    setAmount(""); setDescription(""); setCategory("Food");
   };
+
+  
+
 
   // delete Expense
   const handleDelete = async (id) => {
-    try {
-      await deleteExpenseFromDB(user.uid, id);
-      setExpenses((prev) => prev.filter((exp) => exp.firebaseId !== id));
-      alert("Expense has been deleted")
-    } catch (err) {
-      console.error("Error deleting expense:", err);
-    }
+    await deleteExpenseFromDB(userId, id);
+    dispatch(deleteExpense(id));
+    alert("Expense has been deleted")
   };
-
 // Start editing
 
   const startEditing = (exp) => {
@@ -186,7 +161,15 @@ export default function DailyExpenses() {
             ))}
           </ul>
         )}
+        {premiumActive && (
+  <div className="mt-6 text-center">
+    <button className="px-6 py-2 bg-yellow-500 text-white font-bold rounded-lg shadow hover:bg-yellow-600">
+      🎉 Activate Premium
+    </button>
+  </div>
+)}
       </div>
     </div>
   );
 }
+
