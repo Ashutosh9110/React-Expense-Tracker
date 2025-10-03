@@ -1,5 +1,7 @@
-// src/store/slices/cartSlice.js
 import { createSlice } from "@reduxjs/toolkit";
+import { sendCartData } from "../cartThunks";
+import { showNotification } from "./uiSlice";
+
 
 const cartSlice = createSlice({
   name: "cart",
@@ -37,7 +39,40 @@ const cartSlice = createSlice({
       state.items = [];
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(sendCartData.pending, (state, action) => {
+        // dispatch a pending notification
+        action.asyncDispatch(
+          showNotification({
+            status: "pending",
+            title: "Sending...",
+            message: "Sending cart data!",
+          })
+        );
+      })
+      .addCase(sendCartData.fulfilled, (state, action) => {
+        // dispatch a success notification
+        action.asyncDispatch(
+          showNotification({
+            status: "success",
+            title: "Success!",
+            message: "Sent cart data successfully!",
+          })
+        );
+      })
+      .addCase(sendCartData.rejected, (state, action) => {
+        // dispatch an error notification
+        action.asyncDispatch(
+          showNotification({
+            status: "error",
+            title: "Error!",
+            message: action.payload || "Sending cart data failed!",
+          })
+        );
+      });
+  },
 });
 
-export const { toggleCart, addToCart, removeFromCart, clearCart } = cartSlice.actions;
+export const { toggleCart, addToCart, removeFromCart, clearCart, setCart } = cartSlice.actions;
 export default cartSlice.reducer;

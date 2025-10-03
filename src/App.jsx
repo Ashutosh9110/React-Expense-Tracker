@@ -14,12 +14,12 @@ export default function App() {
   const { userId } = useSelector((state) => state.auth);
   const cartItems = useSelector((state) => state.cart.items);
 
-  // ✅ Listen for Firebase auth changes
+  // Listen for Firebase auth changes
   useEffect(() => {
     dispatch(listenToAuthChanges());
   }, [dispatch]);
 
-  // ✅ Dark mode toggle
+  // Dark mode toggle
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
@@ -28,14 +28,14 @@ export default function App() {
     }
   }, [darkMode]);
 
-  // ✅ Load cart when user logs in
+  // Load cart when user logs in
   useEffect(() => {
     if (userId) {
       dispatch(loadCart(userId));
     }
   }, [dispatch, userId]);
 
-  // ✅ Save cart when items change
+  // Save cart when items change
   useEffect(() => {
     if (userId && cartItems.length >= 0) {
       dispatch(saveCart(userId, cartItems));

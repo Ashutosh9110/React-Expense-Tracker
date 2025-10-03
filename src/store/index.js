@@ -6,6 +6,30 @@ import cartReducer from "./slices/cartSlice"
 import uiReducer from "./slices/uiSlice";
 
 
+const asyncDispatchMiddleware = (storeAPI) => (next) => (action) => {
+  let syncActivityFinished = false;
+  let actionQueue = [];
+
+  function flushQueue() {
+    actionQueue.forEach((a) => storeAPI.dispatch(a));
+    actionQueue = [];
+  }
+
+  function asyncDispatch(asyncAction) {
+    actionQueue.push(asyncAction);
+    if (syncActivityFinished) {
+      flushQueue();
+    }
+  }
+
+  const actionWithAsyncDispatch = Object.assign({}, action, { asyncDispatch });
+
+  const res = next(actionWithAsyncDispatch);
+  syncActivityFinished = true;
+  flushQueue();
+  return res;
+};
+
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -15,6 +39,8 @@ const store = configureStore({
     ui: uiReducer,
     
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(asyncDispatchMiddleware),
 });
 
 export default store;
