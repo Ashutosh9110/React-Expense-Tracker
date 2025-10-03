@@ -1,3 +1,5 @@
+import React from "react";
+
 export default function Notification({ status, title, message }) {
   let classes = "w-full text-center py-3 font-bold";
 
