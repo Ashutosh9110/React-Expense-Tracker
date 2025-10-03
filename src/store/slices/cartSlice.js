@@ -11,6 +11,9 @@ const cartSlice = createSlice({
     toggleCart: (state) => {
       state.visible = !state.visible;
     },
+    setCart: (state, action) => {
+      state.items = action.payload;
+    },
     addToCart: (state, action) => {
       const item = action.payload;
       const existing = state.items.find((i) => i.id === item.id);
